@@ -23,8 +23,8 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
-    // Get password from environment variables, fallback to yazan123
-    const envPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'yazan123';
+    // Get password from environment variables, fallback to the exact value in .env
+    const envPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'Yazh@101010';
     const targetEmail = 'yazan.hijazi@joacademy.com';
 
     setTimeout(() => {
@@ -36,13 +36,13 @@ export default function Login() {
           loggedInAt: Date.now(),
         };
         localStorage.setItem('jo_admin_session', JSON.stringify(sessionData));
-        toast.show('success', 'مرحباً بك أستاذ يزن! تم تسجيل الدخول بنجاح.');
+        toast('تم تسجيل الدخول بنجاح.', 'success');
         navigate('/');
       } else {
-        toast.show('error', 'عذراً! البريد الإلكتروني أو كلمة المرور غير صحيحة.');
+        toast('عذراً! البريد الإلكتروني أو كلمة المرور غير صحيحة.', 'error');
       }
       setLoading(false);
-    }, 800);
+    }, 600);
   };
 
   return (
@@ -120,7 +120,7 @@ export default function Login() {
             margin: '0 0 8px 0',
             fontFamily: 'inherit'
           }}>
-            أهلاً بك أستاذ يزن 👋
+            تسجيل دخول المسؤولين
           </h2>
           <p style={{
             fontSize: '0.88rem',
@@ -152,7 +152,7 @@ export default function Login() {
               <input
                 type="email"
                 required
-                placeholder="yazan.hijazi@joacademy.com"
+                placeholder="admin@joacademy.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 style={{
@@ -182,27 +182,6 @@ export default function Login() {
                 }}
               />
             </div>
-            {/* Quick Autofill Helper */}
-            <button
-              type="button"
-              onClick={() => setEmail('yazan.hijazi@joacademy.com')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--brand)',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                textAlign: 'right',
-                cursor: 'pointer',
-                padding: 0,
-                marginTop: '2px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4
-              }}
-            >
-              🪄 تعبئة بريد يزن حجازي التلقائي
-            </button>
           </div>
 
           {/* Password Field */}
