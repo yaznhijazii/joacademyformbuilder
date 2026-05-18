@@ -151,6 +151,127 @@ export default defineConfig(({ mode }) => {
                 }
               }
             }
+
+            // Route 3: GET/POST/PUT /api/forms
+            if (req.url && req.url.startsWith('/api/forms')) {
+              const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+              const slug = urlObj.searchParams.get('slug');
+              const ADMIN_PASSWORD = env.VITE_ADMIN_PASSWORD || 'Yazh@101010';
+              const BUCKET_URL = 'https://kvdb.io/joacademy_yazan_forms_2026/forms';
+
+              const fetchFromKV = async () => {
+                try {
+                  const response = await fetch(BUCKET_URL);
+                  if (!response.ok) {
+                    if (response.status === 404) return [];
+                    throw new Error('KV error');
+                  }
+                  const data = await response.json();
+                  return Array.isArray(data) ? data : [];
+                } catch (err) {
+                  console.error('Error reading from KV database:', err);
+                  return [];
+                }
+              };
+
+              const saveToKV = async (formsList) => {
+                try {
+                  const response = await fetch(BUCKET_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formsList),
+                  });
+                  return response.ok;
+                } catch (err) {
+                  console.error('Error writing to KV database:', err);
+                  return false;
+                }
+              };
+
+              if (req.method === 'OPTIONS') {
+                res.statusCode = 200;
+                res.setHeader('Access-Control-Allow-Credentials', 'true');
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+                res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-admin-password');
+                res.end();
+                return;
+              }
+
+              res.setHeader('Access-Control-Allow-Credentials', 'true');
+              res.setHeader('Access-Control-Allow-Origin', '*');
+              res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+              res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-admin-password');
+              res.setHeader('Content-Type', 'application/json');
+
+              try {
+                // PUBLIC: Fetch single form by slug
+                if (req.method === 'GET' && slug) {
+                  const formsList = await fetchFromKV();
+                  const formItem = formsList.find((f) => f.slug === slug);
+                  if (!formItem) {
+                    res.statusCode = 404;
+                    res.end(JSON.stringify({ error: 'Form not found' }));
+                    return;
+                  }
+                  res.statusCode = 200;
+                  res.end(JSON.stringify(formItem));
+                  return;
+                }
+
+                // ADMIN ONLY check
+                const clientPassword = req.headers['x-admin-password'];
+                if (clientPassword !== ADMIN_PASSWORD) {
+                  res.statusCode = 401;
+                  res.end(JSON.stringify({ error: 'Unauthorized admin access required' }));
+                  return;
+                }
+
+                // GET all forms
+                if (req.method === 'GET') {
+                  const formsList = await fetchFromKV();
+                  res.statusCode = 200;
+                  res.end(JSON.stringify(formsList));
+                  return;
+                }
+
+                // POST/PUT save forms
+                if (req.method === 'POST' || req.method === 'PUT') {
+                  let body = '';
+                  await new Promise((resolve, reject) => {
+                    req.on('data', (chunk) => { body += chunk; });
+                    req.on('end', resolve);
+                    req.on('error', reject);
+                  });
+
+                  const newForms = JSON.parse(body);
+                  if (!Array.isArray(newForms)) {
+                    res.statusCode = 400;
+                    res.end(JSON.stringify({ error: 'Invalid forms payload, must be an array' }));
+                    return;
+                  }
+                  const success = await saveToKV(newForms);
+                  if (!success) {
+                    res.statusCode = 500;
+                    res.end(JSON.stringify({ error: 'Failed to write data to cloud database' }));
+                    return;
+                  }
+                  res.statusCode = 200;
+                  res.end(JSON.stringify({ success: true, count: newForms.length }));
+                  return;
+                }
+
+                res.statusCode = 405;
+                res.end(JSON.stringify({ error: 'Method not allowed' }));
+                return;
+              } catch (error) {
+                console.error('Serverless Forms Database Error:', error);
+                res.statusCode = 500;
+                res.end(JSON.stringify({ error: error.message || 'Internal server error' }));
+                return;
+              }
+            }
+
             next();
           });
         }

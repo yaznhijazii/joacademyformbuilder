@@ -89,6 +89,34 @@ export default function NotFound() {
             <Icons.Globe size={16} />
             <span>الانتقال لموقع جو أكاديمي الرئيسي</span>
           </button>
+
+          <a
+            href="/portal-login"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              fontSize: '0.8rem',
+              color: 'var(--text-3)',
+              textDecoration: 'none',
+              marginTop: '12px',
+              fontWeight: 700,
+              opacity: 0.6,
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1';
+              e.currentTarget.style.color = 'var(--brand)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.6';
+              e.currentTarget.style.color = 'var(--text-3)';
+            }}
+          >
+            <Icons.Lock size={12} />
+            <span>بوابة الإدارة والمسؤولين</span>
+          </a>
         </div>
       </div>
     </div>
