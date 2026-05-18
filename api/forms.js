@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       return Array.isArray(data) ? data : [];
     } catch (err) {
       console.error('Error reading from KV database:', err);
-      return [];
+      return null;
     }
   };
 
@@ -52,6 +52,9 @@ export default async function handler(req, res) {
     // PUBLIC: Fetch single form by slug (for students)
     if (req.method === 'GET' && slug) {
       const forms = await fetchFromKV();
+      if (forms === null) {
+        return res.status(500).json({ error: 'Failed to read data from cloud database' });
+      }
       const form = forms.find((f) => f.slug === slug);
       if (!form) {
         return res.status(404).json({ error: 'Form not found' });
@@ -68,6 +71,9 @@ export default async function handler(req, res) {
     // GET all forms (Admin only)
     if (req.method === 'GET') {
       const forms = await fetchFromKV();
+      if (forms === null) {
+        return res.status(500).json({ error: 'Failed to read data from cloud database' });
+      }
       return res.status(200).json(forms);
     }
 

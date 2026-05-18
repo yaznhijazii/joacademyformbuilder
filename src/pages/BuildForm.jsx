@@ -87,19 +87,33 @@ export default function BuildForm() {
 
       const updated = getForms();
       const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'Yazh@101010';
-      await fetch('/api/forms', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-password': adminPassword,
-        },
-        body: JSON.stringify(updated),
-      });
+      let syncFailed = false;
+      try {
+        const response = await fetch('/api/forms', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-password': adminPassword,
+          },
+          body: JSON.stringify(updated),
+        });
+        if (!response.ok) {
+          syncFailed = true;
+        }
+      } catch (err) {
+        console.error('Failed to sync forms with server:', err);
+        syncFailed = true;
+      }
 
-      toast(isEdit ? 'تم تحديث النموذج بنجاح وتمت المزامنة سحابياً' : 'تم إنشاء النموذج ونشره بنجاح وتمت المزامنة سحابياً', 'success');
+      if (syncFailed) {
+        toast('تم حفظ النموذج محلياً بنجاح، ولكن فشلت المزامنة السحابية مؤقتاً', 'warning');
+      } else {
+        toast(isEdit ? 'تم تحديث النموذج بنجاح وتمت المزامنة سحابياً' : 'تم إنشاء النموذج ونشره بنجاح وتمت المزامنة سحابياً', 'success');
+      }
       navigate('/');
-    } catch {
-      toast('حدث خطأ أثناء حفظ ومزامنة البيانات سحابياً', 'error');
+    } catch (error) {
+      console.error('Save error:', error);
+      toast('حدث خطأ غير متوقع أثناء حفظ البيانات', 'error');
     } finally {
       setSaving(false);
     }

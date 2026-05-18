@@ -170,7 +170,7 @@ export default defineConfig(({ mode }) => {
                   return Array.isArray(data) ? data : [];
                 } catch (err) {
                   console.error('Error reading from KV database:', err);
-                  return [];
+                  return null;
                 }
               };
 
@@ -208,6 +208,11 @@ export default defineConfig(({ mode }) => {
                 // PUBLIC: Fetch single form by slug
                 if (req.method === 'GET' && slug) {
                   const formsList = await fetchFromKV();
+                  if (formsList === null) {
+                    res.statusCode = 500;
+                    res.end(JSON.stringify({ error: 'Failed to read data from cloud database' }));
+                    return;
+                  }
                   const formItem = formsList.find((f) => f.slug === slug);
                   if (!formItem) {
                     res.statusCode = 404;
@@ -230,6 +235,11 @@ export default defineConfig(({ mode }) => {
                 // GET all forms
                 if (req.method === 'GET') {
                   const formsList = await fetchFromKV();
+                  if (formsList === null) {
+                    res.statusCode = 500;
+                    res.end(JSON.stringify({ error: 'Failed to read data from cloud database' }));
+                    return;
+                  }
                   res.statusCode = 200;
                   res.end(JSON.stringify(formsList));
                   return;
