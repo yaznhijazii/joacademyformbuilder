@@ -146,7 +146,7 @@ export default function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem('jo_admin_session');
     toast('تم تسجيل الخروج بنجاح', 'success');
-    navigate('/login');
+    navigate('/portal-login');
   };
 
   return (

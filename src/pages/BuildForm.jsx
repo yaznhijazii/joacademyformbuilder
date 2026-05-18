@@ -6,11 +6,6 @@ import { Icons } from '../components/Icons';
 import { getForms, createForm, updateForm, slugify, makeUniqueSlug } from '../utils/storage';
 import { useToast } from '../context/ToastContext';
 
-const BITRIX_DEFAULTS = {
-  webhook: import.meta.env.VITE_BITRIX_WEBHOOK || '',
-  entityTypeId: import.meta.env.VITE_BITRIX_ENTITY_TYPE || 1720,
-};
-
 export default function BuildForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -25,6 +20,26 @@ export default function BuildForm() {
   const [slug, setSlug] = useState('');
   const [fields, setFields] = useState([]);
   const [tab, setTab] = useState('fields');
+
+  // SECURE: Masked Bitrix info fetched from server to prevent client-side bundle leakage
+  const [bitrixConfig, setBitrixConfig] = useState({ webhook: 'جاري التحميل...', entityTypeId: 1720 });
+
+  React.useEffect(() => {
+    fetch('/api/webhook-status')
+      .then((res) => res.json())
+      .then((data) => {
+        setBitrixConfig({
+          webhook: data.webhook || '— غير معرف —',
+          entityTypeId: data.entityTypeId || 1720,
+        });
+      })
+      .catch(() => {
+        setBitrixConfig({
+          webhook: 'خطأ في جلب الإعدادات من الخادم',
+          entityTypeId: 1720,
+        });
+      });
+  }, []);
 
   const TABS = [
     { key: 'fields', icon: <Icons.Slider size={16} />, label: 'تخطيط الحقول' },
@@ -276,13 +291,13 @@ export default function BuildForm() {
                   <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                     <span style={{ color: 'var(--text-3)', fontWeight: 700, minWidth: 100 }}>عنوان الـ Webhook:</span>
                     <code style={{ fontSize: '0.78rem', color: 'var(--brand-deep)', wordBreak: 'break-all', fontFamily: 'monospace', fontWeight: 600 }}>
-                      {BITRIX_DEFAULTS.webhook || '— غير معرف (يرجى إعداده في ملف .env) —'}
+                      {bitrixConfig.webhook}
                     </code>
                   </div>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <span style={{ color: 'var(--text-3)', fontWeight: 700, minWidth: 100 }}>رقم الكيان (EntityType):</span>
                     <code style={{ color: 'var(--brand-deep)', fontFamily: 'monospace', fontWeight: 700 }}>
-                      {BITRIX_DEFAULTS.entityTypeId}
+                      {bitrixConfig.entityTypeId}
                     </code>
                   </div>
                 </div>
