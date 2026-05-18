@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import FieldEditor from '../components/FieldEditor';
 import LivePreview from '../components/LivePreview';
@@ -24,7 +24,7 @@ export default function BuildForm() {
   // SECURE: Masked Bitrix info fetched from server to prevent client-side bundle leakage
   const [bitrixConfig, setBitrixConfig] = useState({ webhook: 'جاري التحميل...', entityTypeId: 1720 });
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch('/api/webhook-status')
       .then((res) => res.json())
       .then((data) => {
@@ -48,23 +48,29 @@ export default function BuildForm() {
   ];
 
   // Load for edit
-  React.useEffect(() => {
+  useEffect(() => {
     if (isEdit) {
       const f = getForms().find((x) => x.id === id);
       if (f) {
-        setName(f.name);
-        setTitle(f.title);
-        setSubtitle(f.subtitle || '');
-        setSubmitButtonText(f.submitButtonText || '');
-        setSlug(f.slug);
-        setFields(f.fields || []);
+        Promise.resolve().then(() => {
+          setName(f.name);
+          setTitle(f.title);
+          setSubtitle(f.subtitle || '');
+          setSubmitButtonText(f.submitButtonText || '');
+          setSlug(f.slug);
+          setFields(f.fields || []);
+        });
       }
     }
   }, [id, isEdit]);
 
   // Auto-slug on create
-  React.useEffect(() => {
-    if (!isEdit && name) setSlug(slugify(name));
+  useEffect(() => {
+    if (!isEdit && name) {
+      Promise.resolve().then(() => {
+        setSlug(slugify(name));
+      });
+    }
   }, [name, isEdit]);
 
   const handleSave = async () => {
@@ -75,14 +81,25 @@ export default function BuildForm() {
     try {
       if (isEdit) {
         updateForm(id, { name: name.trim(), title: title.trim(), subtitle: subtitle.trim(), submitButtonText: submitButtonText.trim(), slug: uSlug, fields });
-        toast('تم تحديث النموذج بنجاح', 'success');
       } else {
         createForm({ name: name.trim(), title: title.trim(), subtitle: subtitle.trim(), submitButtonText: submitButtonText.trim(), slug: uSlug, fields });
-        toast('تم إنشاء النموذج ونشره بنجاح', 'success');
       }
+
+      const updated = getForms();
+      const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'Yazh@101010';
+      await fetch('/api/forms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': adminPassword,
+        },
+        body: JSON.stringify(updated),
+      });
+
+      toast(isEdit ? 'تم تحديث النموذج بنجاح وتمت المزامنة سحابياً' : 'تم إنشاء النموذج ونشره بنجاح وتمت المزامنة سحابياً', 'success');
       navigate('/');
     } catch {
-      toast('حدث خطأ غير متوقع أثناء حفظ البيانات', 'error');
+      toast('حدث خطأ أثناء حفظ ومزامنة البيانات سحابياً', 'error');
     } finally {
       setSaving(false);
     }

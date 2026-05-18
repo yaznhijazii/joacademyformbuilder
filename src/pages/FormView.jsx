@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getFormBySlug, incrementSubmissions } from '../utils/storage';
 import { sendToBitrix } from '../utils/bitrix';
 import { Icons } from '../components/Icons';
 import { useToast } from '../context/ToastContext';
@@ -227,9 +226,18 @@ export default function FormView() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    const f = getFormBySlug(slug);
-    if (!f) { setNotFound(true); return; }
-    setForm(f);
+    fetch(`/api/forms?slug=${slug}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then((f) => {
+        setForm(f);
+        setNotFound(false);
+      })
+      .catch(() => {
+        setNotFound(true);
+      });
   }, [slug]);
 
   const validate = () => {
@@ -252,7 +260,6 @@ export default function FormView() {
     setSub(true);
     try {
       await sendToBitrix(form, answers);
-      incrementSubmissions(form.id);
       setDone(true);
     } catch (err) {
       console.error(err);

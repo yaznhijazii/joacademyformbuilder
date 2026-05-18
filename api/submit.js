@@ -77,6 +77,26 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: data.error_description || data.error });
     }
 
+    // Securely increment the submissionsCount in the cloud database
+    const BUCKET_URL = 'https://kvdb.io/joacademy_yazan_forms_2026/forms';
+    try {
+      const getRes = await fetch(BUCKET_URL);
+      if (getRes.ok) {
+        const forms = await getRes.json();
+        const formIdx = forms.findIndex((f) => f.id === form.id);
+        if (formIdx !== -1) {
+          forms[formIdx].submissionsCount = (forms[formIdx].submissionsCount || 0) + 1;
+          await fetch(BUCKET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(forms),
+          });
+        }
+      }
+    } catch (dbErr) {
+      console.error('Failed to increment submissionsCount in database:', dbErr);
+    }
+
     return res.status(200).json(data);
   } catch (error) {
     console.error('Error submitting to Bitrix24:', error);

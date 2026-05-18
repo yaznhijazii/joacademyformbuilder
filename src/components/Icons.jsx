@@ -1,4 +1,3 @@
-import React from 'react';
 
 // Common SVG props helper
 const svgProps = (size = 18, className = '') => ({

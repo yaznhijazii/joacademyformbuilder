@@ -43,7 +43,7 @@ export default async function handler(req, res) {
         }
       }
       masked = `${urlObj.origin}/${pathParts.join('/')}/`;
-    } catch (_) {
+    } catch {
       // Fallback masking if it's not a standard URL
       masked = WEBHOOK.substring(0, 15) + '••••••••' + WEBHOOK.substring(WEBHOOK.length - 5);
     }

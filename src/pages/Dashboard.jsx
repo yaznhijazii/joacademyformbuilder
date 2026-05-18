@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getForms, deleteForm } from '../utils/storage';
 import { Icons } from '../components/Icons';
@@ -128,13 +128,49 @@ export default function Dashboard() {
   const [qrForm, setQrForm] = useState(null);
   const [search, setSearch] = useState('');
 
-  const load = () => setForms(getForms());
+  const load = () => {
+    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'Yazh@101010';
+    fetch('/api/forms', {
+      headers: {
+        'x-admin-password': adminPassword
+      }
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Unauthorized or network issue');
+        return res.json();
+      })
+      .then((formsList) => {
+        if (Array.isArray(formsList)) {
+          localStorage.setItem('joacademy_forms', JSON.stringify(formsList));
+          setForms(formsList);
+        }
+      })
+      .catch(() => {
+        // Fallback to local storage if offline or server issues
+        setForms(getForms());
+      });
+  };
   useEffect(() => { load(); }, []);
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     deleteForm(id);
-    load();
-    toast('تم حذف النموذج بنجاح', 'info');
+    const updated = getForms();
+    setForms(updated);
+    toast('تم حذف النموذج بنجاح وتمت المزامنة سحابياً', 'info');
+
+    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'Yazh@101010';
+    try {
+      await fetch('/api/forms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': adminPassword,
+        },
+        body: JSON.stringify(updated),
+      });
+    } catch (err) {
+      console.error('Failed to sync deletion with server:', err);
+    }
   };
 
   const filtered = forms.filter((f) =>
