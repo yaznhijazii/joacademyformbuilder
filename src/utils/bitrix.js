@@ -20,7 +20,9 @@ export async function sendToBitrix(form, answers) {
     try {
       const errData = await response.json();
       errorMsg = errData.error || errorMsg;
-    } catch (_) {}
+    } catch {
+      // Ignore JSON parsing errors
+    }
     throw new Error(errorMsg);
   }
 

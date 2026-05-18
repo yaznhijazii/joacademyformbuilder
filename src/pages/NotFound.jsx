@@ -1,9 +1,6 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Icons } from '../components/Icons';
 
 export default function NotFound() {
-  const navigate = useNavigate();
 
   return (
     <div style={{
