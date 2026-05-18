@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './context/ToastContext';
 import Dashboard from './pages/Dashboard';
 import BuildForm from './pages/BuildForm';
@@ -6,12 +6,11 @@ import FormView from './pages/FormView';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 
-// ProtectedRoute component: renders <NotFound /> if admin is not authenticated
-// This hides the dashboard and form builder completely, making it look like a 404
+// ProtectedRoute component: redirects to /portal-login if admin is not authenticated
 function ProtectedRoute({ children }) {
   const session = localStorage.getItem('jo_admin_session');
   if (!session) {
-    return <NotFound />;
+    return <Navigate to="/portal-login" replace />;
   }
   return children;
 }
