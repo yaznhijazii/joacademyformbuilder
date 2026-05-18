@@ -143,6 +143,12 @@ export default function Dashboard() {
 
   const totalSubmissions = forms.reduce((s, f) => s + (f.submissionsCount || 0), 0);
 
+  const handleLogout = () => {
+    localStorage.removeItem('jo_admin_session');
+    toast('تم تسجيل الخروج بنجاح', 'success');
+    navigate('/login');
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--surface)', paddingBottom: 60 }}>
       {/* ── Top Navbar ── */}
@@ -164,10 +170,69 @@ export default function Dashboard() {
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand-mid)', lineHeight: 1, marginTop: 2 }}>مُنشئ نماذج التقييم الفاخرة</div>
           </div>
         </div>
-        <button className="btn btn-primary" onClick={() => navigate('/build')} id="new-form-btn" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 22px', borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-brand)' }}>
-          <Icons.Plus size={16} />
-          <span>إنشاء نموذج</span>
-        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          {/* Admin User Profile */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            background: 'var(--surface)',
+            border: '1.5px solid var(--border)',
+            padding: '6px 14px',
+            borderRadius: '12px',
+            boxShadow: 'var(--shadow-sm)'
+          }}>
+            <div style={{
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 800,
+              fontSize: '0.82rem'
+            }}>
+              YH
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-1)', lineHeight: 1.2 }}>يزن حجازي</span>
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--brand-mid)', lineHeight: 1 }}>المدير العام</span>
+            </div>
+            <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 4px' }} />
+            <button
+              onClick={handleLogout}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#ef4444',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 4,
+                borderRadius: '8px',
+                transition: 'all var(--t) var(--ease)'
+              }}
+              title="تسجيل الخروج"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#fef2f2';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'none';
+              }}
+            >
+              <Icons.LogOut size={16} />
+            </button>
+          </div>
+
+          <button className="btn btn-primary" onClick={() => navigate('/build')} id="new-form-btn" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 22px', borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-brand)' }}>
+            <Icons.Plus size={16} />
+            <span>إنشاء نموذج</span>
+          </button>
+        </div>
       </nav>
 
       {/* ── Hero ── */}
