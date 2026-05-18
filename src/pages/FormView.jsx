@@ -14,102 +14,86 @@ function StarInput({ field, value, onChange }) {
   const active = hover || value || 0;
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', margin: '24px 0 12px 0' }}>
-      <div style={{ 
-        display: 'flex', 
-        gap: '12px', 
-        direction: 'rtl', 
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        maxWidth: '480px',
-        flexWrap: 'nowrap'
-      }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', margin: '20px 0 8px 0' }}>
+      {/* Tight, centered star row */}
+      <div className="star-row" style={{ display: 'flex', gap: '8px', direction: 'rtl', justifyContent: 'center', flexWrap: 'nowrap' }}>
         {Array.from({ length: count }).map((_, i) => {
           const ratingValue = i + 1;
-          const labelText = labels[i] || `${ratingValue}`;
           const isActive = ratingValue <= active;
           
           return (
-            <div 
-              key={i} 
+            <button
+              key={i}
+              type="button"
+              className={`star-btn ${isActive ? 'lit' : ''}`}
+              onMouseEnter={() => setHover(ratingValue)}
+              onMouseLeave={() => setHover(0)}
+              onClick={() => onChange(ratingValue)}
+              aria-label={labels[i] || `${ratingValue} نجوم`}
               style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                gap: '8px',
-                flex: '1',
-                minWidth: '0'
+                background: 'none', 
+                border: 'none', 
+                cursor: 'pointer', 
+                padding: '4px', 
+                outline: 'none',
+                transition: 'transform 0.2s ease',
+                transform: hover === ratingValue ? 'scale(1.2)' : 'scale(1)'
               }}
             >
-              {/* Star Button */}
-              <button
-                type="button"
-                className={`star-btn ${isActive ? 'lit' : ''}`}
-                onMouseEnter={() => setHover(ratingValue)}
-                onMouseLeave={() => setHover(0)}
-                onClick={() => onChange(ratingValue)}
-                aria-label={labelText}
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  cursor: 'pointer', 
-                  padding: '8px', 
-                  outline: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'transform 0.2s ease',
-                  transform: hover === ratingValue ? 'scale(1.25)' : 'scale(1)'
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={36}
+                height={36}
+                viewBox="0 0 24 24"
+                stroke={isActive ? 'var(--amber)' : 'var(--border-mid)'}
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill={isActive ? 'var(--amber)' : 'rgba(32,79,140,0.03)'}
+                style={{
+                  filter: isActive ? 'drop-shadow(0 2px 8px rgba(242,162,92,0.4))' : 'none',
+                  transition: 'all 0.2s ease',
                 }}
               >
-                <Icons.Star 
-                  size={32} 
-                  style={{ 
-                    color: isActive ? 'var(--amber)' : 'var(--border-mid)',
-                    fill: isActive ? 'var(--amber)' : 'none',
-                    filter: isActive ? 'drop-shadow(0 2px 8px rgba(242,162,92,0.4))' : 'none',
-                    transition: 'all 0.2s ease',
-                  }} 
-                />
-              </button>
-
-              {/* Connected Label/Chip */}
-              {labels.length > 0 && (
-                <span 
-                  onClick={() => onChange(ratingValue)}
-                  onMouseEnter={() => setHover(ratingValue)}
-                  onMouseLeave={() => setHover(0)}
-                  className={`star-chip ${ratingValue === value ? 'active' : ''}`}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'center',
-                    padding: '8px 4px',
-                    borderRadius: '100px',
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    border: '1.5px solid',
-                    borderColor: ratingValue === value ? 'var(--amber)' : 'rgba(32,79,140,0.1)',
-                    background: ratingValue === value ? 'var(--amber)' : 'rgba(32,79,140,0.03)',
-                    color: ratingValue === value ? '#fff' : 'var(--text-2)',
-                    boxShadow: ratingValue === value ? '0 4px 10px rgba(242,162,92,0.35)' : 'none',
-                    transform: ratingValue === active ? 'translateY(-2px)' : 'none',
-                    transition: 'all 0.2s ease',
-                    userSelect: 'none'
-                  }}
-                >
-                  {labelText}
-                </span>
-              )}
-            </div>
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+            </button>
           );
         })}
       </div>
+
+      {/* Centered chip row */}
+      {labels.length > 0 && (
+        <div className="star-labels-row" style={{ display: 'flex', gap: '8px', direction: 'rtl', justifyContent: 'center', flexWrap: 'wrap' }}>
+          {labels.slice(0, count).map((l, i) => {
+            const ratingValue = i + 1;
+            const isSelected = ratingValue === value;
+            return (
+              <span
+                key={i}
+                onClick={() => onChange(ratingValue)}
+                className={`star-chip ${isSelected ? 'active' : ''}`}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: '100px',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  border: '1.5px solid',
+                  borderColor: isSelected ? 'var(--amber)' : 'var(--border)',
+                  background: isSelected ? 'var(--amber)' : '#fcfdfe',
+                  color: isSelected ? '#fff' : 'var(--text-2)',
+                  boxShadow: isSelected ? '0 4px 12px rgba(242,162,92,0.3)' : 'none',
+                  transition: 'all 0.2s ease',
+                  userSelect: 'none'
+                }}
+              >
+                {l}
+              </span>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
