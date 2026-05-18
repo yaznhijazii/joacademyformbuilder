@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   const ADMIN_PASSWORD = process.env.VITE_ADMIN_PASSWORD || 'Yazh@101010';
-  const BUCKET_URL = 'https://kvdb.io/joacademy_yazan_forms_2026/forms';
+  const BUCKET_URL = 'https://kvdb.io/C4UEARmLD7PdzpXo2jC1VZ/forms';
 
   // Helper to fetch forms from KV store
   const fetchFromKV = async () => {
